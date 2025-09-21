@@ -26,6 +26,7 @@ Aplicativo Android feito em Python/Kivy para pequenas empresas.
 - **Código**
 - **Nome**
 - **Categoria**
+- **Descrição** (opcional - descrição curta do produto)
 - **Quantidade**
 - **Preço**
 - **Imagem** (obrigatória - caminho local)

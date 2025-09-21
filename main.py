@@ -164,6 +164,7 @@ class CadastroScreen(BaseScreen):
             self.ids.codigo.text = ""
             self.ids.nome.text = ""
             self.ids.categoria.text = ""
+            self.ids.descricao.text = ""
             self.ids.quantidade.text = ""
             self.ids.preco.text = ""
             self.ids.imagem_label.text = "Nenhuma imagem selecionada"
@@ -177,6 +178,7 @@ class CadastroScreen(BaseScreen):
             self.ids.codigo.text = produto['codigo']
             self.ids.nome.text = produto['nome']
             self.ids.categoria.text = produto['categoria']
+            self.ids.descricao.text = produto.get('descricao', '')
             self.ids.quantidade.text = str(produto['quantidade'])
             self.ids.preco.text = str(produto['preco'])
             self.ids.imagem_label.text = produto['imagem']
@@ -209,7 +211,8 @@ class CadastroScreen(BaseScreen):
                 "categoria": self.ids.categoria.text.strip(),
                 "quantidade": int(self.ids.quantidade.text),
                 "preco": float(self.ids.preco.text),
-                "imagem": self.imagem_path
+                "imagem": self.imagem_path,
+                "descricao": self.ids.descricao.text.strip()
             }
         except ValueError:
             popup = Popup(title='Erro',
@@ -233,6 +236,7 @@ class PopupScreen(BaseScreen):
             self.ids.imagem.source = self.produto['imagem']
             self.ids.label_nome.text = self.produto['nome']
             self.ids.label_categoria.text = self.produto['categoria']
+            self.ids.label_descricao.text = self.produto.get('descricao', '')
             self.ids.label_quantidade.text = f"Estoque: {self.produto['quantidade']}"
             self.ids.label_preco.text = f"R$ {self.produto['preco']:.2f}"
             self.ids.qtd_operacao.text = ""

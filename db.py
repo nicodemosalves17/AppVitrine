@@ -17,9 +17,17 @@ class BancoDados:
                 categoria TEXT NOT NULL,
                 quantidade INTEGER NOT NULL,
                 preco REAL NOT NULL,
-                imagem TEXT NOT NULL
+                imagem TEXT NOT NULL,
+                descricao TEXT DEFAULT ''
             )
         ''')
+        
+        # Adicionar coluna descricao se ela não existir (para compatibilidade com bancos existentes)
+        try:
+            c.execute('ALTER TABLE produtos ADD COLUMN descricao TEXT DEFAULT ""')
+        except sqlite3.OperationalError:
+            # Coluna já existe
+            pass
         # Usuários
         c.execute('''
             CREATE TABLE IF NOT EXISTS usuarios (
@@ -78,9 +86,9 @@ class BancoDados:
         conn = BancoDados.conectar()
         c = conn.cursor()
         c.execute('''
-            INSERT OR REPLACE INTO produtos (codigo, nome, categoria, quantidade, preco, imagem)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (produto["codigo"], produto["nome"], produto["categoria"], produto["quantidade"], produto["preco"], produto["imagem"]))
+            INSERT OR REPLACE INTO produtos (codigo, nome, categoria, quantidade, preco, imagem, descricao)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (produto["codigo"], produto["nome"], produto["categoria"], produto["quantidade"], produto["preco"], produto["imagem"], produto.get("descricao", "")))
         conn.commit()
         conn.close()
 
@@ -99,7 +107,8 @@ class BancoDados:
                 "categoria": row[2],
                 "quantidade": row[3],
                 "preco": row[4],
-                "imagem": row[5]
+                "imagem": row[5],
+                "descricao": row[6] if len(row) > 6 else ""
             })
         return produtos
 
@@ -117,7 +126,8 @@ class BancoDados:
                 "categoria": row[2],
                 "quantidade": row[3],
                 "preco": row[4],
-                "imagem": row[5]
+                "imagem": row[5],
+                "descricao": row[6] if len(row) > 6 else ""
             }
         return None
 
