@@ -1,0 +1,102 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<LoginScreen@BaseScreen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(12)
+        padding: [dp(12), dp(24), dp(12), dp(12)]
+
+        AnchorLayout:
+            anchor_x: 'center'
+            size_hint_y: None
+            height: dp(180)
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: None, None
+                size: dp(260), dp(140)
+                spacing: dp(6)
+                Widget:
+                    size_hint_y: None
+                    height: dp(4)
+                Image:
+                    id: logo_empresa
+                    source: app.logo_path
+                    size_hint: None, None
+                    size: dp(220), dp(92)
+                    allow_stretch: True
+                    keep_ratio: True
+
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: dp(240)
+            spacing: dp(8)
+            padding: [0, dp(6), 0, 0]
+
+            Label:
+                text: "Usuário"
+                size_hint_y: None
+                height: dp(24)
+                color: 0,0,0,1
+                font_size: sp(16)
+            AnchorLayout:
+                anchor_x: 'center'
+                size_hint_y: None
+                height: dp(48)
+                BoxLayout:
+                    size_hint_x: 0.85
+                    height: dp(48)
+                    TextInput:
+                        id: usuario
+                        multiline: False
+                        font_size: sp(16)
+                        padding: [dp(8), dp(8)]
+                        size_hint_x: 1
+
+            Label:
+                text: "Senha"
+                size_hint_y: None
+                height: dp(24)
+                color: 0,0,0,1
+                font_size: sp(16)
+            AnchorLayout:
+                anchor_x: 'center'
+                size_hint_y: None
+                height: dp(48)
+                BoxLayout:
+                    size_hint_x: 0.85
+                    height: dp(48)
+                    TextInput:
+                        id: senha
+                        password: True
+                        multiline: False
+                        font_size: sp(16)
+                        padding: [dp(8), dp(8)]
+                        size_hint_x: 1
+
+        Label:
+            id: erro
+            text: ""
+            color: 1,0,0,1
+            size_hint_y: None
+            height: dp(28)
+            font_size: sp(14)
+
+        AnchorLayout:
+            anchor_x: 'center'
+            size_hint_y: None
+            height: dp(56)
+            Button:
+                text: "Entrar"
+                size_hint_x: 0.6
+                height: dp(48)
+                font_size: sp(16)
+                on_release: root.login()

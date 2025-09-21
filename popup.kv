@@ -1,0 +1,84 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<PopupScreen@BaseScreen>:
+    titulo: "Detalhes do Produto"
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(8)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(10)
+            size_hint_y: None
+            height: dp(160)
+            Image:
+                id: imagem
+                allow_stretch: True
+                keep_ratio: True
+                size_hint_x: None
+                width: dp(140)
+            BoxLayout:
+                orientation: 'vertical'
+                spacing: dp(6)
+                Label:
+                    id: label_nome
+                    text: ""
+                    color: 0,0,0,1
+                    font_size: sp(18)
+                Label:
+                    id: label_categoria
+                    text: ""
+                    color: 0,0,0,1
+                    font_size: sp(14)
+                Label:
+                    id: label_quantidade
+                    text: ""
+                    color: 0,0,0,1
+                    font_size: sp(14)
+                Label:
+                    id: label_preco
+                    text: ""
+                    color: 0,0,0,1
+                    font_size: sp(14)
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(48)
+            spacing: dp(8)
+            Label:
+                text: "Qtd:"
+                size_hint_x: None
+                width: dp(40)
+                color: 0,0,0,1
+                font_size: sp(14)
+            TextInput:
+                id: qtd_operacao
+                multiline: False
+                size_hint_x: None
+                width: dp(80)
+                font_size: sp(14)
+            Button:
+                text: "Vender"
+                on_release: root.vender()
+            Button:
+                text: "Comprar"
+                on_release: root.comprar()
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(10)
+            padding: [0,dp(4),0,0]
+            Button:
+                id: btn_editar
+                text: "Editar"
+                on_release: root.editar()
+            Button:
+                id: btn_excluir
+                text: "Excluir"
+                on_release: root.excluir()
+            Button:
+                text: "Voltar"
+                on_release: root.manager.current = 'vitrine'

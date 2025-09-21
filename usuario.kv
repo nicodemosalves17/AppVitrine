@@ -1,0 +1,43 @@
+<UsuarioScreen@BaseScreen>:
+    titulo: "Usuário"
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 10
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 10
+            Label:
+                text: "Usuário"
+                color: 0,0,0,1
+            TextInput:
+                id: usuario
+                multiline: False
+            Label:
+                text: "Senha"
+                color: 0,0,0,1
+            TextInput:
+                id: senha
+                multiline: False
+                password: True
+            Label:
+                text: "Perfil"
+                color: 0,0,0,1
+            Spinner:
+                id: perfil
+                text: "usuario"
+                values: ["usuario", "admin"]
+        Label:
+            id: msg
+            text: ""
+            markup: True
+            color: 1,0,0,1
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            spacing: 10
+            Button:
+                text: "Cadastrar"
+                on_release: root.cadastrar_usuario()
+            Button:
+                text: "Cancelar"
+                on_release: root.manager.current = 'vitrine'

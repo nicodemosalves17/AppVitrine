@@ -1,0 +1,56 @@
+<RelatorioScreen@BaseScreen>:
+    titulo: "Relatórios"
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 10
+        BoxLayout:
+            size_hint_y: None
+            height: "40dp"
+            spacing: 10
+            Button:
+                text: "Exportar Excel"
+                on_release: root.exportar_excel()
+            Button:
+                text: "Exportar PDF"
+                on_release: root.exportar_pdf()
+            Button:
+                text: "Voltar"
+                on_release: root.manager.current = 'vitrine'
+        TabbedPanel:
+            do_default_tab: False
+            TabbedPanelItem:
+                text: "Histórico"
+                ScrollView:
+                    do_scroll_x: True
+                    do_scroll_y: True
+                    GridLayout:
+                        id: historico_grid
+                        cols: 1
+                        size_hint_x: None
+                        width: self.minimum_width
+                        size_hint_y: None
+                        height: self.minimum_height
+            TabbedPanelItem:
+                text: "Top Produtos"
+                ScrollView:
+                    do_scroll_x: True
+                    do_scroll_y: True
+                    GridLayout:
+                        id: top_grid
+                        cols: 1
+                        size_hint_x: None
+                        width: self.minimum_width
+                        size_hint_y: None
+                        height: self.minimum_height
+            TabbedPanelItem:
+                text: "Estoque"
+                ScrollView:
+                    do_scroll_x: True
+                    do_scroll_y: True
+                    GridLayout:
+                        id: estoque_grid
+                        cols: 1
+                        size_hint_x: None
+                        width: self.minimum_width
+                        size_hint_y: None
+                        height: self.minimum_height

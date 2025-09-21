@@ -1,0 +1,114 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<CadastroScreen@BaseScreen>:
+    titulo: "Cadastro Produto"
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: dp(8)
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            GridLayout:
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(8)
+                spacing: dp(8)
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(6)
+                    Label:
+                        text: "Código"
+                        color: 0,0,0,1
+                        font_size: sp(14)
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        id: codigo
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(40)
+                        font_size: sp(14)
+
+                    Label:
+                        text: "Nome"
+                        color: 0,0,0,1
+                        font_size: sp(14)
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        id: nome
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(40)
+                        font_size: sp(14)
+
+                    Label:
+                        text: "Categoria"
+                        color: 0,0,0,1
+                        font_size: sp(14)
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        id: categoria
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(40)
+                        font_size: sp(14)
+
+                    Label:
+                        text: "Quantidade"
+                        color: 0,0,0,1
+                        font_size: sp(14)
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        id: quantidade
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(40)
+                        font_size: sp(14)
+
+                    Label:
+                        text: "Preço"
+                        color: 0,0,0,1
+                        font_size: sp(14)
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        id: preco
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(40)
+                        font_size: sp(14)
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(8)
+                        Label:
+                            id: imagem_label
+                            text: "Nenhuma imagem selecionada"
+                            color: 0,0,0,1
+                            font_size: sp(12)
+                            size_hint_x: 0.7
+                        Button:
+                            text: "Selecionar Imagem"
+                            size_hint_x: 0.3
+                            on_release: root.abrir_filechooser()
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(12)
+            padding: [dp(8),0,dp(8),dp(8)]
+            Button:
+                text: "Salvar"
+                on_release: root.cadastrar()
+            Button:
+                text: "Cancelar"
+                on_release: root.manager.current = 'vitrine'
