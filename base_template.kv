@@ -1,0 +1,21 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<BaseScreen@Screen>:
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(6)
+
+        # Top menu (sempre acima dos produtos)
+        TopMenu:
+            id: top_menu
+            size_hint_y: None
+            height: dp(48)
+
+        # Conteúdo da tela (produtos, formulários etc)
+        BoxLayout:
+            id: content_area
+            orientation: 'vertical'
+            padding: dp(10)
+            spacing: dp(10)
+            # Os filhos da vitrine.kv serão inseridos aqui
