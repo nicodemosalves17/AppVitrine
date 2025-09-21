@@ -14,7 +14,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,ttf,txt
 
 # Dependências Python
-requirements = python3,kivy,pillow,pandas,fpdf
+requirements = python3,kivy,pillow,pandas,fpdf2,openpyxl,fonttools,defusedxml
 
 # Permissões Android necessárias para salvar/ler PDF e arquivos
 android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE

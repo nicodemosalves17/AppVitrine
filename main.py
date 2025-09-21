@@ -131,10 +131,23 @@ class CadastroScreen(BaseScreen):
         from kivy.uix.filechooser import FileChooserIconView
         from kivy.uix.boxlayout import BoxLayout
         from kivy.uix.button import Button
+        from kivy.uix.label import Label
+        import os
 
         box = BoxLayout(orientation='vertical')
-        filechooser = FileChooserIconView(filters=['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.gif'])
+        filechooser = FileChooserIconView(
+            filters=['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.gif', '*.webp'],
+            path=os.path.expanduser('~')  # Inicia na pasta do usuário
+        )
         box.add_widget(filechooser)
+        
+        status_label = Label(
+            text="Selecione uma imagem (PNG, JPG, JPEG, BMP, GIF, WEBP)", 
+            size_hint_y=None, 
+            height=30
+        )
+        box.add_widget(status_label)
+        
         btn_box = BoxLayout(size_hint_y=None, height='40dp')
         btn_ok = Button(text="Selecionar")
         btn_cancel = Button(text="Cancelar")
@@ -145,12 +158,46 @@ class CadastroScreen(BaseScreen):
 
         def selecionar(*args):
             if filechooser.selection:
-                self.imagem_path = filechooser.selection[0]
+                selected_file = filechooser.selection[0]
+                
+                # Validação do arquivo
+                if not os.path.isfile(selected_file):
+                    status_label.text = "Erro: Arquivo não encontrado"
+                    return
+                
+                # Verifica o tamanho do arquivo (max 10MB)
+                file_size = os.path.getsize(selected_file)
+                if file_size > 10 * 1024 * 1024:  # 10MB
+                    status_label.text = "Erro: Arquivo muito grande (máx 10MB)"
+                    return
+                
+                # Verifica se é uma imagem válida
+                valid_extensions = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp']
+                file_ext = os.path.splitext(selected_file)[1].lower()
+                
+                if file_ext not in valid_extensions:
+                    status_label.text = "Erro: Formato de arquivo inválido"
+                    return
+                
                 try:
-                    self.ids.imagem_label.text = self.imagem_path
-                except Exception:
-                    pass
-            popup.dismiss()
+                    # Tenta validar se é uma imagem real usando Pillow
+                    from PIL import Image
+                    with Image.open(selected_file) as img:
+                        img.verify()  # Verifica se é uma imagem válida
+                    
+                    self.imagem_path = selected_file
+                    try:
+                        filename = os.path.basename(selected_file)
+                        self.ids.imagem_label.text = f"✓ {filename}"
+                    except Exception:
+                        pass
+                    popup.dismiss()
+                    
+                except Exception as e:
+                    status_label.text = f"Erro: Arquivo de imagem inválido - {str(e)}"
+                    return
+            else:
+                status_label.text = "Erro: Nenhum arquivo selecionado"
 
         def cancelar(*args):
             popup.dismiss()
@@ -392,6 +439,193 @@ class RelatorioScreen(BaseScreen):
                 self.ids.estoque_grid.add_widget(line)
             except Exception:
                 pass
+
+    def exportar_excel(self):
+        """Exporta relatórios para arquivo Excel"""
+        try:
+            import pandas as pd
+            from datetime import datetime
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            # Prepara dados do histórico
+            historico = BancoDados.obter_historico()
+            historico_df = pd.DataFrame(historico, columns=[
+                'Código', 'Produto', 'Categoria', 'Tipo', 'Data/Hora', 'Vendedor'
+            ])
+            
+            # Prepara dados dos produtos mais movimentados
+            top_produtos = BancoDados.produtos_mais_movimentados()
+            top_df = pd.DataFrame(top_produtos, columns=[
+                'Produto', 'Vendido', 'Comprado'
+            ])
+            
+            # Prepara dados do estoque
+            estoque = BancoDados.relatorio_estoque()
+            estoque_df = pd.DataFrame(estoque, columns=[
+                'Código', 'Produto', 'Categoria', 'Total Compra', 'Total Venda', 'Estoque'
+            ])
+            
+            # Gera nome do arquivo com timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"relatorio_estoque_{timestamp}.xlsx"
+            
+            # Exporta para Excel com múltiplas abas
+            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+                historico_df.to_excel(writer, sheet_name='Histórico', index=False)
+                top_df.to_excel(writer, sheet_name='Top Produtos', index=False)
+                estoque_df.to_excel(writer, sheet_name='Estoque', index=False)
+            
+            # Mostra popup de sucesso
+            popup = Popup(
+                title='Sucesso',
+                content=Label(text=f'Relatório exportado para:\n{filename}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
+            
+        except Exception as e:
+            # Mostra popup de erro
+            popup = Popup(
+                title='Erro',
+                content=Label(text=f'Erro ao exportar Excel:\n{str(e)}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
+
+    def exportar_pdf(self):
+        """Exporta relatórios para arquivo PDF"""
+        try:
+            from fpdf import FPDF
+            from datetime import datetime
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            # Cria PDF
+            pdf = FPDF()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.add_page()
+            
+            # Título
+            pdf.set_font('helvetica', 'B', 16)
+            pdf.cell(0, 10, 'Relatório de Estoque e Vendas', new_x='LMARGIN', new_y='NEXT', align='C')
+            pdf.ln(5)
+            
+            # Data/hora do relatório
+            pdf.set_font('helvetica', '', 10)
+            pdf.cell(0, 10, f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}', new_x='LMARGIN', new_y='NEXT', align='C')
+            pdf.ln(10)
+            
+            # Seção: Top Produtos
+            pdf.set_font('helvetica', 'B', 14)
+            pdf.cell(0, 10, 'Produtos Mais Movimentados', new_x='LMARGIN', new_y='NEXT', align='L')
+            pdf.ln(2)
+            
+            pdf.set_font('helvetica', 'B', 10)
+            pdf.cell(80, 8, 'Produto', border=1, new_x='RIGHT', new_y='TOP', align='C')
+            pdf.cell(40, 8, 'Vendido', border=1, new_x='RIGHT', new_y='TOP', align='C')
+            pdf.cell(40, 8, 'Comprado', border=1, new_x='LMARGIN', new_y='NEXT', align='C')
+            
+            pdf.set_font('helvetica', '', 9)
+            top_produtos = BancoDados.produtos_mais_movimentados()
+            for produto in top_produtos[:10]:  # Top 10
+                pdf.cell(80, 6, str(produto[0])[:25], border=1, new_x='RIGHT', new_y='TOP', align='L')
+                pdf.cell(40, 6, str(produto[1]), border=1, new_x='RIGHT', new_y='TOP', align='C')
+                pdf.cell(40, 6, str(produto[2]), border=1, new_x='LMARGIN', new_y='NEXT', align='C')
+            
+            pdf.ln(10)
+            
+            # Seção: Estoque Atual
+            pdf.set_font('helvetica', 'B', 14)
+            pdf.cell(0, 10, 'Estoque Atual', new_x='LMARGIN', new_y='NEXT', align='L')
+            pdf.ln(2)
+            
+            pdf.set_font('helvetica', 'B', 9)
+            pdf.cell(25, 8, 'Código', border=1, new_x='RIGHT', new_y='TOP', align='C')
+            pdf.cell(60, 8, 'Produto', border=1, new_x='RIGHT', new_y='TOP', align='C')
+            pdf.cell(40, 8, 'Categoria', border=1, new_x='RIGHT', new_y='TOP', align='C')
+            pdf.cell(30, 8, 'Estoque', border=1, new_x='LMARGIN', new_y='NEXT', align='C')
+            
+            pdf.set_font('helvetica', '', 8)
+            estoque = BancoDados.relatorio_estoque()
+            for item in estoque:
+                pdf.cell(25, 6, str(item[0]), border=1, new_x='RIGHT', new_y='TOP', align='C')
+                pdf.cell(60, 6, str(item[1])[:20], border=1, new_x='RIGHT', new_y='TOP', align='L')
+                pdf.cell(40, 6, str(item[2])[:15], border=1, new_x='RIGHT', new_y='TOP', align='L')
+                pdf.cell(30, 6, str(item[5]), border=1, new_x='LMARGIN', new_y='NEXT', align='C')
+                
+                # Quebra de página se necessário
+                if pdf.get_y() > 250:
+                    pdf.add_page()
+                    pdf.set_font('helvetica', 'B', 9)
+                    pdf.cell(25, 8, 'Código', border=1, new_x='RIGHT', new_y='TOP', align='C')
+                    pdf.cell(60, 8, 'Produto', border=1, new_x='RIGHT', new_y='TOP', align='C')
+                    pdf.cell(40, 8, 'Categoria', border=1, new_x='RIGHT', new_y='TOP', align='C')
+                    pdf.cell(30, 8, 'Estoque', border=1, new_x='LMARGIN', new_y='NEXT', align='C')
+                    pdf.set_font('helvetica', '', 8)
+            
+            # Salva o arquivo
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"relatorio_estoque_{timestamp}.pdf"
+            pdf.output(filename)
+            
+            # Mostra popup de sucesso
+            popup = Popup(
+                title='Sucesso',
+                content=Label(text=f'Relatório PDF exportado para:\n{filename}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
+            
+        except Exception as e:
+            # Mostra popup de erro
+            popup = Popup(
+                title='Erro',
+                content=Label(text=f'Erro ao exportar PDF:\n{str(e)}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
+
+    def criar_backup(self):
+        """Cria backup do banco de dados"""
+        try:
+            from datetime import datetime
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_filename = f"backup_produtos_{timestamp}.db"
+            
+            success, msg = BancoDados.backup_database(backup_filename)
+            
+            if success:
+                popup = Popup(
+                    title='Backup Criado',
+                    content=Label(text=f'Backup salvo como:\n{backup_filename}'),
+                    size_hint=(None, None), 
+                    size=(400, 200)
+                )
+            else:
+                popup = Popup(
+                    title='Erro',
+                    content=Label(text=f'Erro ao criar backup:\n{msg}'),
+                    size_hint=(None, None), 
+                    size=(400, 200)
+                )
+            popup.open()
+            
+        except Exception as e:
+            popup = Popup(
+                title='Erro',
+                content=Label(text=f'Erro inesperado:\n{str(e)}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
 
 class EstoqueApp(App, LogoManager, MenuManager):
     is_admin = BooleanProperty(False)

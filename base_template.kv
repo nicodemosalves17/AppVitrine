@@ -2,20 +2,30 @@
 #:import sp kivy.metrics.sp
 
 <BaseScreen@Screen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
         spacing: dp(6)
 
-        # Top menu (sempre acima dos produtos)
+        # Top menu (visível apenas para usuários autorizados)
         TopMenu:
             id: top_menu
-            size_hint_y: None
-            height: dp(48)
 
-        # Conteúdo da tela (produtos, formulários etc)
         BoxLayout:
             id: content_area
             orientation: 'vertical'
             padding: dp(10)
             spacing: dp(10)
-            # Os filhos da vitrine.kv serão inseridos aqui
+            # conteúdo das telas (ScreenManager) ficará abaixo
+
+    # Overlay layer para menus e popups
+    FloatLayout:
+        id: overlay_layer
+        size_hint: 1, 1
+        pos_hint: {'x': 0, 'y': 0}
