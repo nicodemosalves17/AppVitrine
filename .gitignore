@@ -1,0 +1,38 @@
+# Build artifacts
+*.pyc
+__pycache__/
+.buildozer/
+bin/
+
+# Database files (keep empty DB, ignore data)
+# produtos.db
+
+# Generated reports
+relatorio_*.xlsx
+relatorio_*.pdf
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log
+
+# User data
+.user_data/
+
+# Android build artifacts
+*.apk
+*.aab
+
+# Python virtual env
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kivy garden
+.kivy/
