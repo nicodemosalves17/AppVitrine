@@ -1,0 +1,1 @@
+# AppVitrine - Gestão de Estoque e Controle de Vendas

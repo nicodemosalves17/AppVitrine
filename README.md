@@ -1,31 +1,27 @@
-# App de Gestão de Estoque e Controle de Vendas
+# AppVitrine - Gestão de Estoque
 
-Aplicativo Android feito em Python/Kivy para pequenas empresas.
+Aplicativo Android para gestão de estoque e controle de vendas feito em Python/Kivy.
 
-## Funcionalidades
+## Quick Start
 
-- Cadastro, edição e exclusão de produtos
-- Registro de vendas e compras com atualização automática do estoque
-- Banco de dados local SQLite
-- Imagem **anexada** obrigatoriamente para cada produto
+```bash
+pip install kivy
+python main.py
+```
 
-## Como rodar
+📖 **[Documentação completa](docs/README.md)**
 
-1. Instale Python 3 e Kivy (`pip install kivy`).
-2. Execute: `python main.py`
-3. Para gerar APK, use [Buildozer](https://buildozer.readthedocs.io/en/latest/).
+## Estrutura do Projeto
 
-## Observações
+- `src/` - Código fonte principal (models, screens, managers)
+- `ui/` - Arquivos de interface Kivy (KV files)
+- `assets/` - Recursos estáticos (imagens, banco de dados)
+- `docs/` - Documentação detalhada
 
-- Use o botão "Selecionar Imagem" para anexar uma imagem do seu computador.
-- O caminho da imagem ficará salvo no banco de dados e será exibido na vitrine e no popup.
-- Para Android, use [plyer](https://github.com/kivy/plyer) para acesso à galeria/câmera.
+## Build Android
 
-## Estrutura do banco de dados
+Use [Buildozer](https://buildozer.readthedocs.io/en/latest/):
 
-- **Código**
-- **Nome**
-- **Categoria**
-- **Quantidade**
-- **Preço**
-- **Imagem** (obrigatória - caminho local)
+```bash
+buildozer android debug
+```
