@@ -131,10 +131,23 @@ class CadastroScreen(BaseScreen):
         from kivy.uix.filechooser import FileChooserIconView
         from kivy.uix.boxlayout import BoxLayout
         from kivy.uix.button import Button
+        from kivy.uix.label import Label
+        import os
 
         box = BoxLayout(orientation='vertical')
-        filechooser = FileChooserIconView(filters=['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.gif'])
+        filechooser = FileChooserIconView(
+            filters=['*.png', '*.jpg', '*.jpeg', '*.bmp', '*.gif', '*.webp'],
+            path=os.path.expanduser('~')  # Inicia na pasta do usuário
+        )
         box.add_widget(filechooser)
+        
+        status_label = Label(
+            text="Selecione uma imagem (PNG, JPG, JPEG, BMP, GIF, WEBP)", 
+            size_hint_y=None, 
+            height=30
+        )
+        box.add_widget(status_label)
+        
         btn_box = BoxLayout(size_hint_y=None, height='40dp')
         btn_ok = Button(text="Selecionar")
         btn_cancel = Button(text="Cancelar")
@@ -145,12 +158,46 @@ class CadastroScreen(BaseScreen):
 
         def selecionar(*args):
             if filechooser.selection:
-                self.imagem_path = filechooser.selection[0]
+                selected_file = filechooser.selection[0]
+                
+                # Validação do arquivo
+                if not os.path.isfile(selected_file):
+                    status_label.text = "Erro: Arquivo não encontrado"
+                    return
+                
+                # Verifica o tamanho do arquivo (max 10MB)
+                file_size = os.path.getsize(selected_file)
+                if file_size > 10 * 1024 * 1024:  # 10MB
+                    status_label.text = "Erro: Arquivo muito grande (máx 10MB)"
+                    return
+                
+                # Verifica se é uma imagem válida
+                valid_extensions = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp']
+                file_ext = os.path.splitext(selected_file)[1].lower()
+                
+                if file_ext not in valid_extensions:
+                    status_label.text = "Erro: Formato de arquivo inválido"
+                    return
+                
                 try:
-                    self.ids.imagem_label.text = self.imagem_path
-                except Exception:
-                    pass
-            popup.dismiss()
+                    # Tenta validar se é uma imagem real usando Pillow
+                    from PIL import Image
+                    with Image.open(selected_file) as img:
+                        img.verify()  # Verifica se é uma imagem válida
+                    
+                    self.imagem_path = selected_file
+                    try:
+                        filename = os.path.basename(selected_file)
+                        self.ids.imagem_label.text = f"✓ {filename}"
+                    except Exception:
+                        pass
+                    popup.dismiss()
+                    
+                except Exception as e:
+                    status_label.text = f"Erro: Arquivo de imagem inválido - {str(e)}"
+                    return
+            else:
+                status_label.text = "Erro: Nenhum arquivo selecionado"
 
         def cancelar(*args):
             popup.dismiss()
@@ -538,6 +585,43 @@ class RelatorioScreen(BaseScreen):
             popup = Popup(
                 title='Erro',
                 content=Label(text=f'Erro ao exportar PDF:\n{str(e)}'),
+                size_hint=(None, None), 
+                size=(400, 200)
+            )
+            popup.open()
+
+    def criar_backup(self):
+        """Cria backup do banco de dados"""
+        try:
+            from datetime import datetime
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_filename = f"backup_produtos_{timestamp}.db"
+            
+            success, msg = BancoDados.backup_database(backup_filename)
+            
+            if success:
+                popup = Popup(
+                    title='Backup Criado',
+                    content=Label(text=f'Backup salvo como:\n{backup_filename}'),
+                    size_hint=(None, None), 
+                    size=(400, 200)
+                )
+            else:
+                popup = Popup(
+                    title='Erro',
+                    content=Label(text=f'Erro ao criar backup:\n{msg}'),
+                    size_hint=(None, None), 
+                    size=(400, 200)
+                )
+            popup.open()
+            
+        except Exception as e:
+            popup = Popup(
+                title='Erro',
+                content=Label(text=f'Erro inesperado:\n{str(e)}'),
                 size_hint=(None, None), 
                 size=(400, 200)
             )

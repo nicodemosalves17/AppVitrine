@@ -194,3 +194,34 @@ class BancoDados:
         dados = c.fetchall()
         conn.close()
         return dados
+
+    @staticmethod
+    def backup_database(backup_path='backup_produtos.db'):
+        """Cria backup do banco de dados"""
+        import shutil
+        import os
+        try:
+            if os.path.exists("produtos.db"):
+                shutil.copy2("produtos.db", backup_path)
+                return True, f"Backup criado: {backup_path}"
+            else:
+                return False, "Banco de dados não encontrado"
+        except Exception as e:
+            return False, f"Erro ao criar backup: {str(e)}"
+
+    @staticmethod
+    def restore_database(backup_path='backup_produtos.db'):
+        """Restaura banco de dados do backup"""
+        import shutil
+        import os
+        try:
+            if os.path.exists(backup_path):
+                # Cria backup do atual antes de restaurar
+                if os.path.exists("produtos.db"):
+                    shutil.copy2("produtos.db", "produtos_old.db")
+                shutil.copy2(backup_path, "produtos.db")
+                return True, f"Banco restaurado de: {backup_path}"
+            else:
+                return False, "Arquivo de backup não encontrado"
+        except Exception as e:
+            return False, f"Erro ao restaurar backup: {str(e)}"
