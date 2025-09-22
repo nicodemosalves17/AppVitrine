@@ -3,9 +3,8 @@
 <VitrineScreen@BaseScreen>:
     titulo: "Produtos"
 
-    # O conteúdo vai para o content_area do template base!
+    # Content for the vitrine screen
     BoxLayout:
-        id: content_area
         orientation: 'vertical'
         spacing: dp(10)
 
@@ -35,3 +34,9 @@
                 padding: [dp(15), dp(10), dp(15), dp(10)]
                 size_hint_y: None
                 height: self.minimum_height
+
+    # Overlay layer para menus e popups - garantir que esteja sempre no topo
+    FloatLayout:
+        id: overlay_layer
+        size_hint: 1, 1
+        pos_hint: {'x': 0, 'y': 0}
