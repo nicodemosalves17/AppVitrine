@@ -15,13 +15,20 @@
 
     Button:
         id: btn_menu
-        text: "Menu ▾"
+        text: "☰"
         size_hint_x: None
-        width: dp(110)
-        font_size: sp(16)
+        width: dp(60)
+        font_size: sp(24)
         on_release: app.open_main_menu(self)
         opacity: 1 if app.is_admin else 0
         disabled: not app.is_admin
+        canvas.before:
+            Color:
+                rgba: 0.2, 0.2, 0.2, 0.1
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [dp(8)]
 
     Widget:
         size_hint_x: 1

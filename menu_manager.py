@@ -37,10 +37,9 @@ class MenuManager:
         except Exception:
             return
 
-        # cria backdrop (captura toques e fecha menu)
-        backdrop = Button(size_hint=(1, 1), pos=(0, 0), background_color=(0, 0, 0, 0.0))
-        # make backdrop slightly semitransparente if you want masking effect:
-        # backdrop.background_color = (0,0,0,0.15)
+        # cria backdrop (captura toques e fecha menu) - fundo semi-transparente
+        backdrop = Button(size_hint=(1, 1), pos=(0, 0), background_color=(0, 0, 0, 0.3))
+        # backdrop com efeito visual de fundo escuro para destacar o menu
 
         # cria caixa do menu
         menu_items = [
@@ -74,15 +73,21 @@ class MenuManager:
         btn_cancel.bind(on_release=lambda *a: _remove())
         menu_box.add_widget(btn_cancel)
 
-        # desenho simples de fundo (opcional) - adiciona canvas ao menu_box
+        # desenho de fundo melhorado - adiciona canvas ao menu_box
         with menu_box.canvas.before:
-            Color(0.96, 0.96, 0.96, 1)
-            bg = RoundedRectangle(size=(menu_box.width, menu_box.height), pos=menu_box.pos, radius=[6])
-        # atualiza bg com mudanças de pos/size
+            Color(1, 1, 1, 0.95)  # fundo branco quase opaco
+            bg = RoundedRectangle(size=(menu_box.width, menu_box.height), pos=menu_box.pos, radius=[dp(8)])
+        # borda sutil para destacar o menu
+        with menu_box.canvas.after:
+            Color(0.8, 0.8, 0.8, 0.8)  # borda cinza claro
+            from kivy.graphics import Line
+            border = Line(rounded_rectangle=[menu_box.x, menu_box.y, menu_box.width, menu_box.height, dp(8)], width=1)
+        # atualiza bg e border com mudanças de pos/size
         def _update_bg(*a):
             try:
                 bg.size = (menu_box.width, menu_box.height)
                 bg.pos = menu_box.pos
+                border.rounded_rectangle = [menu_box.x, menu_box.y, menu_box.width, menu_box.height, dp(8)]
             except Exception:
                 pass
         menu_box.bind(pos=_update_bg, size=_update_bg)
@@ -111,18 +116,92 @@ class MenuManager:
             top_y = wy + widget.height
             # converte coordenada janela -> coordenada local do overlay
             local_x, local_y = overlay.to_widget(wx, top_y)
-            # queremos o canto superior esquerdo do menu alinhado ao topo do widget
+            # queremos o menu dropdown abaixo do botão hambúrguer
             menu_x = local_x
-            menu_y = local_y - menu_box.height - dp(4)
-            # corrige limites para não sair da tela/overlay
+            menu_y = local_y - menu_box.height - dp(8)
+            
+            # garante que o menu fique dentro da tela
             if menu_x + menu_box.width > overlay.width:
                 menu_x = max(dp(6), overlay.width - menu_box.width - dp(6))
             if menu_y < 0:
-                menu_y = dp(6)
+                # se não cabe abaixo, coloca acima do botão
+                _, top_y = widget.to_window(widget.x, widget.y + widget.height)
+                _, local_y = overlay.to_widget(0, top_y)
+                menu_y = local_y + dp(8)
+                # se ainda não couber, força no topo da tela
+                if menu_y + menu_box.height > overlay.height:
+                    menu_y = dp(6)
             menu_box.pos = (menu_x, menu_y)
         except Exception:
-            # fallback: canto superior esquerdo com margin
+            # fallback: canto superior esquerdo com margin, garantindo visibilidade
             menu_box.pos = (dp(8), overlay.height - menu_box.height - dp(8))
 
         # fecha o menu se o usuário clicar no backdrop
         backdrop.bind(on_release=lambda *a: _remove())
+
+    def _on_novo_produto(self):
+        """Navega para a tela de cadastro de produto"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                self.root.current = 'cadastro'
+        except Exception as e:
+            print("Erro ao abrir tela de cadastro:", e)
+
+    def _on_novo_usuario(self):
+        """Navega para a tela de cadastro de usuário"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                self.root.current = 'usuario'
+        except Exception as e:
+            print("Erro ao abrir tela de usuário:", e)
+
+    def _on_relatorio(self):
+        """Navega para a tela de relatórios"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                self.root.current = 'relatorio'
+        except Exception as e:
+            print("Erro ao abrir tela de relatório:", e)
+
+    def _on_logomarcar(self):
+        """Abre opções para alterar ou remover logo"""
+        try:
+            from kivy.uix.popup import Popup
+            from kivy.uix.boxlayout import BoxLayout
+            from kivy.uix.button import Button
+            from kivy.uix.label import Label
+
+            content = BoxLayout(orientation='vertical', spacing=10)
+            content.add_widget(Label(text='Escolha uma opção:', size_hint_y=None, height=30))
+            
+            btn_alterar = Button(text='Alterar Logo', size_hint_y=None, height=40)
+            btn_remover = Button(text='Remover Logo', size_hint_y=None, height=40)
+            btn_cancelar = Button(text='Cancelar', size_hint_y=None, height=40)
+            
+            content.add_widget(btn_alterar)
+            content.add_widget(btn_remover)
+            content.add_widget(btn_cancelar)
+
+            popup = Popup(title='Logomarcar', content=content, size_hint=(0.6, 0.4))
+
+            def alterar_logo(*args):
+                popup.dismiss()
+                if hasattr(self, 'open_logo_chooser'):
+                    self.open_logo_chooser()
+                else:
+                    print("Funcionalidade de alteração de logo não disponível")
+
+            def remover_logo(*args):
+                popup.dismiss()
+                if hasattr(self, 'remove_custom_logo'):
+                    self.remove_custom_logo()
+                else:
+                    print("Funcionalidade de remoção de logo não disponível")
+
+            btn_alterar.bind(on_release=alterar_logo)
+            btn_remover.bind(on_release=remover_logo)
+            btn_cancelar.bind(on_release=lambda x: popup.dismiss())
+
+            popup.open()
+        except Exception as e:
+            print("Erro ao abrir popup de logomarcar:", e)
