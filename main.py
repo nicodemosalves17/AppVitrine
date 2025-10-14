@@ -10,17 +10,14 @@ import shutil
 from db import BancoDados
 
 from logo_manager import LogoManager
-from menu_manager import MenuManager
+from root_layout import RootLayout
 
 class ClickableImage(ButtonBehavior, Image):
     pass
 
 # Carrega os templates e telas
-if os.path.exists("base_template.kv"):
-    Builder.load_file("base_template.kv")
-
-if os.path.exists("menu.kv"):
-    Builder.load_file("menu.kv")
+if os.path.exists("root_layout.kv"):
+    Builder.load_file("root_layout.kv")
 
 for kv in ("login.kv", "vitrine.kv", "cadastro.kv", "popup.kv", "usuario.kv", "relatorio.kv"):
     if os.path.exists(kv):
@@ -42,7 +39,9 @@ Builder.load_string("""
 class LoginScreen(BaseScreen):
     def on_pre_enter(self):
         app = App.get_running_app()
-        app.show_top_menu = False  # Oculta a topbar no login
+        # Oculta o menu hambúrguer no login
+        if hasattr(app, 'root_layout'):
+            app.root_layout.habilitar_menu(False)
         try:
             if hasattr(self.ids, 'logo_empresa'):
                 self.ids.logo_empresa.source = app.logo_path
@@ -56,7 +55,9 @@ class LoginScreen(BaseScreen):
         app = App.get_running_app()
         if perfil:
             app.is_admin = (perfil == 'admin' or perfil == 'administrator' or perfil == 'root')
-            app.show_top_menu = True  # Mostra a topbar após login
+            # Habilita o menu hambúrguer após login
+            if hasattr(app, 'root_layout'):
+                app.root_layout.habilitar_menu(True)
             self.manager.current = 'vitrine'
             vitrine = self.manager.get_screen('vitrine')
             vitrine.usuario_logado = usuario
@@ -71,7 +72,6 @@ class VitrineScreen(BaseScreen):
     usuario_logado = ""
     perfil_logado = ""
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True  # Garante topbar visível
         try:
             self.ids.produtos_box.clear_widgets()
         except Exception:
@@ -122,7 +122,6 @@ class CadastroScreen(BaseScreen):
     editando = False
 
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         if not self.editando:
             self.limpar_campos()
 
@@ -272,8 +271,6 @@ class PopupScreen(BaseScreen):
     produto = None
     usuario_logado = ""
     perfil_logado = ""
-    def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
     def carregar_produto(self, codigo):
         self.produto = BancoDados.obter_produto(codigo)
         try:
@@ -339,7 +336,6 @@ class PopupScreen(BaseScreen):
 
 class UsuarioScreen(BaseScreen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         self.limpar_campos()
 
     def limpar_campos(self):
@@ -367,7 +363,6 @@ class UsuarioScreen(BaseScreen):
 
 class RelatorioScreen(BaseScreen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         from kivy.uix.label import Label
         from kivy.uix.boxlayout import BoxLayout
 
@@ -627,10 +622,9 @@ class RelatorioScreen(BaseScreen):
             )
             popup.open()
 
-class EstoqueApp(App, LogoManager, MenuManager):
+class EstoqueApp(App, LogoManager):
     is_admin = BooleanProperty(False)
     logo_path = StringProperty("logo_empresa.png")  # Caminho padrão da logo
-    show_top_menu = BooleanProperty(False)  # Controla visibilidade da TopMenu
 
     def build(self):
         BancoDados.criar_tabela()
@@ -643,8 +637,11 @@ class EstoqueApp(App, LogoManager, MenuManager):
             pass
 
         self.is_admin = False
-        self.show_top_menu = False
 
+        # Cria o layout raiz com menu hambúrguer
+        self.root_layout = RootLayout()
+        
+        # Cria o ScreenManager
         sm = ScreenManager(transition=FadeTransition())
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(VitrineScreen(name='vitrine'))
@@ -652,9 +649,12 @@ class EstoqueApp(App, LogoManager, MenuManager):
         sm.add_widget(PopupScreen(name='popup'))
         sm.add_widget(UsuarioScreen(name='usuario'))
         sm.add_widget(RelatorioScreen(name='relatorio'))
+        
+        # Adiciona o ScreenManager ao container do root_layout
+        self.root_layout.ids.screen_container.add_widget(sm)
         self.root = sm
 
-        return sm
+        return self.root_layout
 
     def selecionar_logo(self):
         if hasattr(self, 'open_logo_chooser'):
@@ -664,7 +664,9 @@ class EstoqueApp(App, LogoManager, MenuManager):
 
     def logout(self):
         self.is_admin = False
-        self.show_top_menu = False
+        # Oculta o menu hambúrguer no logout
+        if hasattr(self, 'root_layout'):
+            self.root_layout.habilitar_menu(False)
         if self.root:
             try:
                 self.root.current = 'login'
