@@ -77,11 +77,6 @@ class VitrineScreen(BaseScreen):
         except Exception:
             pass
         produtos = BancoDados.obter_todos_produtos()
-        try:
-            self.ids.btn_cadastro.disabled = (self.perfil_logado != 'admin')
-            self.ids.btn_cad_usuario.disabled = (self.perfil_logado != 'admin')
-        except Exception:
-            pass
         for produto in produtos:
             self.add_produto_card(produto)
 
