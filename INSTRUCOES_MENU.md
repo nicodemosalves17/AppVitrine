@@ -1,5 +1,16 @@
 ```markdown
-# Instruções de integração do Menu com opção de Logomarcar
+# ⚠️ DESCONTINUADO - Este arquivo está obsoleto
+
+**NOTA IMPORTANTE**: Este menu antigo foi substituído pelo novo menu hambúrguer.
+Veja o arquivo MIGRATION_SUMMARY.md para detalhes da nova implementação.
+
+O sistema agora usa:
+- root_layout.kv - Layout com menu hambúrguer lateral
+- root_layout.py - Classe RootLayout com controle do menu
+
+---
+
+# [OBSOLETO] Instruções de integração do Menu com opção de Logomarcar
 
 O que eu entreguei:
 - menu.kv: widget TopMenu (botão "Menu") que aciona um DropDown com as opções pedidas.

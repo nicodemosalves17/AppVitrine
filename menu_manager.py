@@ -126,3 +126,39 @@ class MenuManager:
 
         # fecha o menu se o usuário clicar no backdrop
         backdrop.bind(on_release=lambda *a: _remove())
+
+    def _on_novo_produto(self):
+        """Navega para a tela de cadastro de novo produto"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                cadastro = self.root.get_screen('cadastro')
+                cadastro.limpar_campos()
+                self.root.current = 'cadastro'
+        except Exception as e:
+            print(f"Erro ao navegar para cadastro: {e}")
+
+    def _on_novo_usuario(self):
+        """Navega para a tela de cadastro de novo usuário"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                self.root.current = 'usuario'
+        except Exception as e:
+            print(f"Erro ao navegar para usuário: {e}")
+
+    def _on_relatorio(self):
+        """Navega para a tela de relatórios"""
+        try:
+            if hasattr(self, 'root') and self.root:
+                self.root.current = 'relatorio'
+        except Exception as e:
+            print(f"Erro ao navegar para relatório: {e}")
+
+    def _on_logomarcar(self):
+        """Abre o popup de seleção de logo"""
+        try:
+            if hasattr(self, 'open_logo_chooser'):
+                self.open_logo_chooser()
+            else:
+                print("open_logo_chooser não disponível.")
+        except Exception as e:
+            print(f"Erro ao abrir logo chooser: {e}")

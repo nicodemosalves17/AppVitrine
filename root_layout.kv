@@ -1,0 +1,137 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<RootLayout@FloatLayout>:
+    menu_aberto: False
+    
+    # Conteúdo principal (ScreenManager será adicionado aqui programaticamente)
+    BoxLayout:
+        id: main_content
+        orientation: 'vertical'
+        
+        # Barra superior com botão hambúrguer e botão sair
+        BoxLayout:
+            id: top_bar
+            size_hint_y: None
+            height: dp(48)
+            padding: [dp(8), dp(6), dp(8), dp(6)]
+            spacing: dp(8)
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 0.03
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            # Botão hambúrguer (☰)
+            Button:
+                id: btn_hamburger
+                text: "☰"
+                size_hint_x: None
+                width: dp(48)
+                font_size: sp(24)
+                opacity: 0
+                disabled: True
+                on_release: root.abrir_menu()
+            
+            Widget:
+                size_hint_x: 1
+            
+            # Botão Sair
+            Button:
+                id: btn_sair
+                text: "Sair"
+                size_hint_x: None
+                width: dp(110)
+                font_size: sp(16)
+                opacity: 0
+                disabled: True
+                on_release: app.logout()
+        
+        # Container para o ScreenManager
+        BoxLayout:
+            id: screen_container
+            orientation: 'vertical'
+    
+    # Menu lateral (inicialmente invisível)
+    BoxLayout:
+        id: side_menu
+        orientation: 'vertical'
+        size_hint: None, 1
+        width: dp(250)
+        x: -dp(250) if not root.menu_aberto else 0
+        spacing: dp(2)
+        padding: dp(8)
+        canvas.before:
+            Color:
+                rgba: 0.95, 0.95, 0.95, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        # Cabeçalho do menu
+        Label:
+            text: "MENU"
+            size_hint_y: None
+            height: dp(50)
+            font_size: sp(20)
+            bold: True
+            color: 0, 0, 0, 1
+        
+        # Separador
+        Widget:
+            size_hint_y: None
+            height: dp(1)
+            canvas.before:
+                Color:
+                    rgba: 0.7, 0.7, 0.7, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+        
+        # Opções do menu
+        Button:
+            text: "NOVO PRODUTO"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.menu_action('cadastro')
+        
+        Button:
+            text: "NOVO USUÁRIO"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.menu_action('usuario')
+        
+        Button:
+            text: "RELATÓRIO"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.menu_action('relatorio')
+        
+        Button:
+            text: "LOGOMARCAR"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.menu_action('logomarcar')
+        
+        Widget:
+            size_hint_y: 1
+        
+        # Botão fechar menu
+        Button:
+            text: "Fechar"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.fechar_menu()
+    
+    # Overlay escuro quando menu está aberto
+    Widget:
+        id: overlay
+        opacity: 0.5 if root.menu_aberto else 0
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 0.5 if root.menu_aberto else 0
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        on_touch_down: (root.menu_aberto and self.collide_point(*args[1].pos) and root.fechar_menu()) or False
