@@ -1,8 +1,14 @@
 #:import dp kivy.metrics.dp
 #:import sp kivy.metrics.sp
 
-<CadastroScreen@BaseScreen>:
-    titulo: "Cadastro Produto"
+<CadastroScreen@Screen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
         spacing: dp(10)

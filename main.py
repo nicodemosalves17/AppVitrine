@@ -10,17 +10,17 @@ import shutil
 from db import BancoDados
 
 from logo_manager import LogoManager
-from menu_manager import MenuManager
 
 class ClickableImage(ButtonBehavior, Image):
     pass
 
+# Load root_layout.kv
+if os.path.exists("root_layout.kv"):
+    Builder.load_file("root_layout.kv")
+
 # Carrega os templates e telas
 if os.path.exists("base_template.kv"):
     Builder.load_file("base_template.kv")
-
-if os.path.exists("menu.kv"):
-    Builder.load_file("menu.kv")
 
 for kv in ("login.kv", "vitrine.kv", "cadastro.kv", "popup.kv", "usuario.kv", "relatorio.kv"):
     if os.path.exists(kv):
@@ -39,10 +39,17 @@ Builder.load_string("""
             size: self.size
 """)
 
-class LoginScreen(BaseScreen):
+class LoginScreen(Screen):
     def on_pre_enter(self):
         app = App.get_running_app()
-        app.show_top_menu = False  # Oculta a topbar no login
+        # Hide hamburger on login screen
+        try:
+            root = app.root
+            if hasattr(root, 'ids') and hasattr(root.ids, 'btn_hamburger'):
+                root.ids.btn_hamburger.opacity = 0
+                root.ids.btn_hamburger.disabled = True
+        except Exception:
+            pass
         try:
             if hasattr(self.ids, 'logo_empresa'):
                 self.ids.logo_empresa.source = app.logo_path
@@ -56,7 +63,14 @@ class LoginScreen(BaseScreen):
         app = App.get_running_app()
         if perfil:
             app.is_admin = (perfil == 'admin' or perfil == 'administrator' or perfil == 'root')
-            app.show_top_menu = True  # Mostra a topbar após login
+            # Show hamburger after login
+            try:
+                root = app.root
+                if hasattr(root, 'ids') and hasattr(root.ids, 'btn_hamburger'):
+                    root.ids.btn_hamburger.opacity = 1
+                    root.ids.btn_hamburger.disabled = False
+            except Exception as e:
+                app.print_debug(f"Error showing hamburger: {e}")
             self.manager.current = 'vitrine'
             vitrine = self.manager.get_screen('vitrine')
             vitrine.usuario_logado = usuario
@@ -67,11 +81,10 @@ class LoginScreen(BaseScreen):
             except Exception:
                 pass
 
-class VitrineScreen(BaseScreen):
+class VitrineScreen(Screen):
     usuario_logado = ""
     perfil_logado = ""
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True  # Garante topbar visível
         try:
             self.ids.produtos_box.clear_widgets()
         except Exception:
@@ -117,12 +130,11 @@ class VitrineScreen(BaseScreen):
         cadastro.limpar_campos()
         self.manager.current = "cadastro"
 
-class CadastroScreen(BaseScreen):
+class CadastroScreen(Screen):
     imagem_path = ""
     editando = False
 
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         if not self.editando:
             self.limpar_campos()
 
@@ -268,12 +280,12 @@ class CadastroScreen(BaseScreen):
         self.limpar_campos()
         self.manager.current = "vitrine"
 
-class PopupScreen(BaseScreen):
+class PopupScreen(Screen):
     produto = None
     usuario_logado = ""
     perfil_logado = ""
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
+        pass
     def carregar_produto(self, codigo):
         self.produto = BancoDados.obter_produto(codigo)
         try:
@@ -337,9 +349,8 @@ class PopupScreen(BaseScreen):
         BancoDados.registrar_operacao(self.produto, qtd, 'compra', self.usuario_logado)
         self.manager.current = "vitrine"
 
-class UsuarioScreen(BaseScreen):
+class UsuarioScreen(Screen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         self.limpar_campos()
 
     def limpar_campos(self):
@@ -365,9 +376,8 @@ class UsuarioScreen(BaseScreen):
         else:
             self.ids.msg.text = f"[color=ff0000]{msg}[/color]"
 
-class RelatorioScreen(BaseScreen):
+class RelatorioScreen(Screen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         from kivy.uix.label import Label
         from kivy.uix.boxlayout import BoxLayout
 
@@ -627,10 +637,9 @@ class RelatorioScreen(BaseScreen):
             )
             popup.open()
 
-class EstoqueApp(App, LogoManager, MenuManager):
+class EstoqueApp(App, LogoManager):
     is_admin = BooleanProperty(False)
     logo_path = StringProperty("logo_empresa.png")  # Caminho padrão da logo
-    show_top_menu = BooleanProperty(False)  # Controla visibilidade da TopMenu
 
     def build(self):
         BancoDados.criar_tabela()
@@ -643,8 +652,8 @@ class EstoqueApp(App, LogoManager, MenuManager):
             pass
 
         self.is_admin = False
-        self.show_top_menu = False
 
+        # Create ScreenManager
         sm = ScreenManager(transition=FadeTransition())
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(VitrineScreen(name='vitrine'))
@@ -652,9 +661,42 @@ class EstoqueApp(App, LogoManager, MenuManager):
         sm.add_widget(PopupScreen(name='popup'))
         sm.add_widget(UsuarioScreen(name='usuario'))
         sm.add_widget(RelatorioScreen(name='relatorio'))
-        self.root = sm
+        sm.current = 'login'
 
-        return sm
+        # Create RootLayout from KV and wire ScreenManager
+        from kivy.factory import Factory
+        root = Factory.RootLayout()
+        root.screen_manager = sm
+        root.ids.screen_manager_container.add_widget(sm)
+
+        return root
+
+    def ir_para(self, tela):
+        """Navigate to a specific screen"""
+        try:
+            if self.root and hasattr(self.root, 'screen_manager'):
+                self.root.screen_manager.current = tela
+                self.print_debug(f"Navigated to: {tela}")
+        except Exception as e:
+            self.print_debug(f"Error navigating to {tela}: {e}")
+
+    def toggle_menu(self):
+        """Toggle the hamburger menu overlay"""
+        try:
+            if self.root and hasattr(self.root, 'ids') and hasattr(self.root.ids, 'menu_overlay'):
+                overlay = self.root.ids.menu_overlay
+                if overlay.opacity == 0:
+                    overlay.opacity = 1
+                    overlay.disabled = False
+                else:
+                    overlay.opacity = 0
+                    overlay.disabled = True
+        except Exception as e:
+            self.print_debug(f"Error toggling menu: {e}")
+
+    def print_debug(self, msg):
+        """Print debug messages"""
+        print(f"[DEBUG] {msg}")
 
     def selecionar_logo(self):
         if hasattr(self, 'open_logo_chooser'):
@@ -663,13 +705,26 @@ class EstoqueApp(App, LogoManager, MenuManager):
             print("open_logo_chooser não disponível.")
 
     def logout(self):
+        """Logout and return to login screen, hiding hamburger"""
         self.is_admin = False
-        self.show_top_menu = False
+        
+        # Hide hamburger button
+        try:
+            if self.root and hasattr(self.root, 'ids') and hasattr(self.root.ids, 'btn_hamburger'):
+                self.root.ids.btn_hamburger.opacity = 0
+                self.root.ids.btn_hamburger.disabled = True
+        except Exception as e:
+            self.print_debug(f"Error hiding hamburger: {e}")
+        
+        # Navigate to login screen
         if self.root:
             try:
-                self.root.current = 'login'
-            except Exception:
-                pass
+                if hasattr(self.root, 'screen_manager'):
+                    self.root.screen_manager.current = 'login'
+                else:
+                    self.root.current = 'login'
+            except Exception as e:
+                self.print_debug(f"Error navigating to login: {e}")
 
 if __name__ == '__main__':
     EstoqueApp().run()

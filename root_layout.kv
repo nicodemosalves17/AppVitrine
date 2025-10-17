@@ -1,0 +1,110 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<RootLayout@FloatLayout>:
+    screen_manager: None
+
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # Container for ScreenManager
+    BoxLayout:
+        id: screen_manager_container
+        orientation: 'vertical'
+
+    # Hamburger button (top-left)
+    Button:
+        id: btn_hamburger
+        text: "☰"
+        size_hint: None, None
+        size: dp(48), dp(48)
+        pos_hint: {'x': 0, 'top': 1}
+        font_size: sp(24)
+        opacity: 0
+        disabled: True
+        on_release: app.toggle_menu()
+
+    # Menu overlay (initially hidden)
+    FloatLayout:
+        id: menu_overlay
+        size_hint: 1, 1
+        opacity: 0
+        disabled: True
+        
+        # Semi-transparent background that closes menu on touch
+        Widget:
+            canvas.before:
+                Color:
+                    rgba: 0, 0, 0, 0.5 if root.ids.menu_overlay.opacity > 0 else 0
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            on_touch_down: (root.ids.menu_overlay.opacity == 1) and (setattr(root.ids.menu_overlay, 'opacity', 0) or setattr(root.ids.menu_overlay, 'disabled', True))
+
+        # Menu panel (left side)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, 1
+            width: dp(250)
+            pos_hint: {'x': 0, 'y': 0}
+            padding: dp(10)
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    rgba: 0.95, 0.95, 0.95, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            # Menu header
+            Label:
+                text: "Menu"
+                size_hint_y: None
+                height: dp(50)
+                font_size: sp(20)
+                bold: True
+                color: 0, 0, 0, 1
+
+            # Menu buttons
+            Button:
+                text: "Vitrine"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (setattr(root.screen_manager, 'current', 'vitrine'), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))
+
+            Button:
+                text: "Novo Produto"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (setattr(root.screen_manager, 'current', 'cadastro'), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))
+
+            Button:
+                text: "Novo Usuário"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (setattr(root.screen_manager, 'current', 'usuario'), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))
+
+            Button:
+                text: "Relatório"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (setattr(root.screen_manager, 'current', 'relatorio'), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))
+
+            Button:
+                text: "Selecionar Logo"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (app.selecionar_logo(), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))
+
+            Widget:
+                size_hint_y: 1
+
+            Button:
+                text: "Sair"
+                size_hint_y: None
+                height: dp(48)
+                on_release: (app.logout(), setattr(root.ids.menu_overlay, 'opacity', 0), setattr(root.ids.menu_overlay, 'disabled', True))

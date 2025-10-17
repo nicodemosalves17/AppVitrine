@@ -1,11 +1,22 @@
-<UsuarioScreen@BaseScreen>:
-    titulo: "Usuário"
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<UsuarioScreen@Screen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     BoxLayout:
         orientation: 'vertical'
-        spacing: 10
+        spacing: dp(10)
+        padding: dp(10)
+
         BoxLayout:
             orientation: 'vertical'
-            spacing: 10
+            spacing: dp(10)
             Label:
                 text: "Usuário"
                 color: 0,0,0,1
@@ -33,8 +44,8 @@
             color: 1,0,0,1
         BoxLayout:
             size_hint_y: None
-            height: 50
-            spacing: 10
+            height: dp(50)
+            spacing: dp(10)
             Button:
                 text: "Cadastrar"
                 on_release: root.cadastrar_usuario()
