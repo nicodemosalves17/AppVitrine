@@ -81,7 +81,7 @@
                 size_hint_y: None
                 height: dp(48)
                 font_size: sp(16)
-                on_release: setattr(root.screen_manager, 'current', 'vitrine') if root.screen_manager else None; setattr(root, 'menu_aberto', False)
+                on_release: root.navegar('vitrine')
 
             Button:
                 text: "Novo Produto"
@@ -90,7 +90,7 @@
                 font_size: sp(16)
                 disabled: not app.is_admin
                 opacity: 1 if app.is_admin else 0.5
-                on_release: setattr(root.screen_manager, 'current', 'cadastro') if root.screen_manager else None; setattr(root, 'menu_aberto', False)
+                on_release: root.navegar('cadastro')
 
             Button:
                 text: "Novo Usuário"
@@ -99,21 +99,21 @@
                 font_size: sp(16)
                 disabled: not app.is_admin
                 opacity: 1 if app.is_admin else 0.5
-                on_release: setattr(root.screen_manager, 'current', 'usuario') if root.screen_manager else None; setattr(root, 'menu_aberto', False)
+                on_release: root.navegar('usuario')
 
             Button:
                 text: "Relatório"
                 size_hint_y: None
                 height: dp(48)
                 font_size: sp(16)
-                on_release: setattr(root.screen_manager, 'current', 'relatorio') if root.screen_manager else None; setattr(root, 'menu_aberto', False)
+                on_release: root.navegar('relatorio')
 
             Button:
                 text: "Logo"
                 size_hint_y: None
                 height: dp(48)
                 font_size: sp(16)
-                on_release: app.selecionar_logo(); setattr(root, 'menu_aberto', False)
+                on_release: root.abrir_logo()
 
             Widget:
 

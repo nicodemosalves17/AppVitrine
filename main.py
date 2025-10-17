@@ -32,6 +32,20 @@ class RootLayout(FloatLayout):
     
     def fechar_menu(self):
         self.menu_aberto = False
+    
+    def navegar(self, tela):
+        """Navega para uma tela e fecha o menu"""
+        if self.screen_manager:
+            self.screen_manager.current = tela
+        self.menu_aberto = False
+    
+    def abrir_logo(self):
+        """Abre o seletor de logo e fecha o menu"""
+        from kivy.app import App
+        app = App.get_running_app()
+        if hasattr(app, 'selecionar_logo'):
+            app.selecionar_logo()
+        self.menu_aberto = False
 
 class BaseScreen(Screen):
     pass
