@@ -1,0 +1,128 @@
+#:import dp kivy.metrics.dp
+
+<RootLayout>:
+    menu_aberto: False
+    screen_manager: None
+
+    # Container for ScreenManager
+    FloatLayout:
+        id: screen_manager_container
+        size_hint: 1, 1
+        pos_hint: {'x': 0, 'y': 0}
+
+    # Hamburger menu button (hidden by default, shown after login)
+    Button:
+        id: btn_hamburger
+        text: "☰"
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {'top': 1, 'x': 0}
+        font_size: dp(24)
+        opacity: 0
+        disabled: True
+        on_release: root.toggle_menu(True)
+
+    # Menu overlay (backdrop and menu content)
+    FloatLayout:
+        id: menu_overlay
+        size_hint: 1, 1
+        pos_hint: {'x': 0, 'y': 0}
+        opacity: 1 if root.menu_aberto else 0
+        disabled: not root.menu_aberto
+        
+        # Semi-transparent backdrop
+        Button:
+            size_hint: 1, 1
+            pos_hint: {'x': 0, 'y': 0}
+            background_color: 0, 0, 0, 0.5 if root.menu_aberto else 0
+            on_touch_down: (root.menu_aberto and self.collide_point(*args[1].pos) and root.fechar_menu()) or False
+            
+        # Menu panel
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: None, 1
+            width: dp(250)
+            pos_hint: {'x': 0 if root.menu_aberto else -1, 'y': 0}
+            padding: dp(10)
+            spacing: dp(10)
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            # Menu header
+            Label:
+                text: "Menu"
+                size_hint_y: None
+                height: dp(50)
+                font_size: dp(20)
+                bold: True
+                color: 0, 0, 0, 1
+            
+            Widget:
+                size_hint_y: None
+                height: dp(1)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+            
+            # Menu buttons
+            Button:
+                text: "Vitrine"
+                size_hint_y: None
+                height: dp(50)
+                on_release: root.screen_manager.current = 'vitrine'; root.toggle_menu(False)
+            
+            Button:
+                text: "Novo Produto"
+                size_hint_y: None
+                height: dp(50)
+                opacity: 1 if app.is_admin else 0
+                disabled: not app.is_admin
+                on_release: root.screen_manager.current = 'cadastro'; root.toggle_menu(False)
+            
+            Button:
+                text: "Novo Usuário"
+                size_hint_y: None
+                height: dp(50)
+                opacity: 1 if app.is_admin else 0
+                disabled: not app.is_admin
+                on_release: root.screen_manager.current = 'usuario'; root.toggle_menu(False)
+            
+            Button:
+                text: "Relatório"
+                size_hint_y: None
+                height: dp(50)
+                on_release: root.screen_manager.current = 'relatorio'; root.toggle_menu(False)
+            
+            Button:
+                text: "Trocar Logo"
+                size_hint_y: None
+                height: dp(50)
+                opacity: 1 if app.is_admin else 0
+                disabled: not app.is_admin
+                on_release: app.selecionar_logo(); root.toggle_menu(False)
+            
+            Widget:
+                size_hint_y: 1
+            
+            Widget:
+                size_hint_y: None
+                height: dp(1)
+                canvas.before:
+                    Color:
+                        rgba: 0.8, 0.8, 0.8, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+            
+            Button:
+                text: "Sair"
+                size_hint_y: None
+                height: dp(50)
+                on_release: app.logout(); root.toggle_menu(False)

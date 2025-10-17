@@ -10,17 +10,17 @@ import shutil
 from db import BancoDados
 
 from logo_manager import LogoManager
-from menu_manager import MenuManager
+from root_layout import RootLayout
 
 class ClickableImage(ButtonBehavior, Image):
     pass
 
 # Carrega os templates e telas
+if os.path.exists("root_layout.kv"):
+    Builder.load_file("root_layout.kv")
+
 if os.path.exists("base_template.kv"):
     Builder.load_file("base_template.kv")
-
-if os.path.exists("menu.kv"):
-    Builder.load_file("menu.kv")
 
 for kv in ("login.kv", "vitrine.kv", "cadastro.kv", "popup.kv", "usuario.kv", "relatorio.kv"):
     if os.path.exists(kv):
@@ -42,7 +42,6 @@ Builder.load_string("""
 class LoginScreen(BaseScreen):
     def on_pre_enter(self):
         app = App.get_running_app()
-        app.show_top_menu = False  # Oculta a topbar no login
         try:
             if hasattr(self.ids, 'logo_empresa'):
                 self.ids.logo_empresa.source = app.logo_path
@@ -56,11 +55,14 @@ class LoginScreen(BaseScreen):
         app = App.get_running_app()
         if perfil:
             app.is_admin = (perfil == 'admin' or perfil == 'administrator' or perfil == 'root')
-            app.show_top_menu = True  # Mostra a topbar após login
             self.manager.current = 'vitrine'
             vitrine = self.manager.get_screen('vitrine')
             vitrine.usuario_logado = usuario
             vitrine.perfil_logado = perfil
+            # Show hamburger menu button after login
+            if hasattr(app.root, 'ids') and 'btn_hamburger' in app.root.ids:
+                app.root.ids.btn_hamburger.opacity = 1
+                app.root.ids.btn_hamburger.disabled = False
         else:
             try:
                 self.ids.erro.text = "Usuário ou senha inválidos"
@@ -71,7 +73,6 @@ class VitrineScreen(BaseScreen):
     usuario_logado = ""
     perfil_logado = ""
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True  # Garante topbar visível
         try:
             self.ids.produtos_box.clear_widgets()
         except Exception:
@@ -122,7 +123,6 @@ class CadastroScreen(BaseScreen):
     editando = False
 
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         if not self.editando:
             self.limpar_campos()
 
@@ -273,7 +273,7 @@ class PopupScreen(BaseScreen):
     usuario_logado = ""
     perfil_logado = ""
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
+        pass
     def carregar_produto(self, codigo):
         self.produto = BancoDados.obter_produto(codigo)
         try:
@@ -339,7 +339,6 @@ class PopupScreen(BaseScreen):
 
 class UsuarioScreen(BaseScreen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         self.limpar_campos()
 
     def limpar_campos(self):
@@ -367,7 +366,6 @@ class UsuarioScreen(BaseScreen):
 
 class RelatorioScreen(BaseScreen):
     def on_pre_enter(self):
-        App.get_running_app().show_top_menu = True
         from kivy.uix.label import Label
         from kivy.uix.boxlayout import BoxLayout
 
@@ -627,10 +625,9 @@ class RelatorioScreen(BaseScreen):
             )
             popup.open()
 
-class EstoqueApp(App, LogoManager, MenuManager):
+class EstoqueApp(App, LogoManager):
     is_admin = BooleanProperty(False)
     logo_path = StringProperty("logo_empresa.png")  # Caminho padrão da logo
-    show_top_menu = BooleanProperty(False)  # Controla visibilidade da TopMenu
 
     def build(self):
         BancoDados.criar_tabela()
@@ -643,8 +640,11 @@ class EstoqueApp(App, LogoManager, MenuManager):
             pass
 
         self.is_admin = False
-        self.show_top_menu = False
 
+        # Create RootLayout
+        root = RootLayout()
+        
+        # Create ScreenManager
         sm = ScreenManager(transition=FadeTransition())
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(VitrineScreen(name='vitrine'))
@@ -652,9 +652,29 @@ class EstoqueApp(App, LogoManager, MenuManager):
         sm.add_widget(PopupScreen(name='popup'))
         sm.add_widget(UsuarioScreen(name='usuario'))
         sm.add_widget(RelatorioScreen(name='relatorio'))
-        self.root = sm
+        sm.current = 'login'
+        
+        # Set screen_manager on root and add to container
+        root.screen_manager = sm
+        root.ids.screen_manager_container.add_widget(sm)
 
-        return sm
+        return root
+
+    def ir_para(self, tela):
+        """Navigate to a screen"""
+        print(f"[DEBUG] Navegando para tela: {tela}")
+        if self.root and self.root.screen_manager:
+            self.root.screen_manager.current = tela
+            print(f"[DEBUG] Tela atual: {self.root.screen_manager.current}")
+        else:
+            print("[DEBUG] ERRO: root ou screen_manager não disponível")
+
+    def print_debug(self):
+        """Debug helper"""
+        print(f"[DEBUG] App root: {self.root}")
+        print(f"[DEBUG] Screen manager: {self.root.screen_manager if self.root else 'N/A'}")
+        print(f"[DEBUG] Current screen: {self.root.screen_manager.current if self.root and self.root.screen_manager else 'N/A'}")
+        print(f"[DEBUG] Is admin: {self.is_admin}")
 
     def selecionar_logo(self):
         if hasattr(self, 'open_logo_chooser'):
@@ -664,10 +684,23 @@ class EstoqueApp(App, LogoManager, MenuManager):
 
     def logout(self):
         self.is_admin = False
-        self.show_top_menu = False
         if self.root:
+            # Hide hamburger button
             try:
-                self.root.current = 'login'
+                if hasattr(self.root, 'ids') and 'btn_hamburger' in self.root.ids:
+                    self.root.ids.btn_hamburger.opacity = 0
+                    self.root.ids.btn_hamburger.disabled = True
+            except Exception:
+                pass
+            # Close menu
+            try:
+                if hasattr(self.root, 'fechar_menu'):
+                    self.root.fechar_menu()
+            except Exception:
+                pass
+            # Navigate to login screen
+            try:
+                self.root.screen_manager.current = 'login'
             except Exception:
                 pass
 
