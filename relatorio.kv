@@ -1,8 +1,18 @@
-<RelatorioScreen@BaseScreen>:
-    titulo: "Relatórios"
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<RelatorioScreen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
     BoxLayout:
         orientation: 'vertical'
         spacing: 10
+        padding: dp(10)
         BoxLayout:
             size_hint_y: None
             height: "40dp"
