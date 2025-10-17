@@ -1,0 +1,125 @@
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
+
+<RootLayout@FloatLayout>:
+    menu_aberto: False
+    screen_manager: None
+
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # Container para o ScreenManager (conteúdo principal)
+    BoxLayout:
+        id: screen_manager_container
+        orientation: 'vertical'
+
+    # Botão hamburger (inicialmente oculto, aparece após login)
+    Button:
+        id: btn_hamburger
+        text: "☰"
+        size_hint: None, None
+        size: dp(48), dp(48)
+        pos: dp(10), root.height - dp(58)
+        font_size: sp(24)
+        opacity: 0
+        disabled: True
+        on_release: setattr(root, 'menu_aberto', True)
+
+    # Overlay escuro (captura cliques quando menu aberto)
+    Button:
+        id: overlay
+        size_hint: 1, 1
+        pos: 0, 0
+        background_color: 0, 0, 0, 0.5
+        opacity: 1 if root.menu_aberto else 0
+        disabled: not root.menu_aberto
+        on_release: setattr(root, 'menu_aberto', False)
+
+    # Painel lateral (menu)
+    BoxLayout:
+        id: menu_lateral
+        orientation: 'vertical'
+        size_hint: None, 1
+        width: dp(250)
+        pos: (-dp(250) if not root.menu_aberto else 0), 0
+        canvas.before:
+            Color:
+                rgba: 0.95, 0.95, 0.95, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Header do menu
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            canvas.before:
+                Color:
+                    rgba: 1, 0.647, 0, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: "Menu"
+                font_size: sp(20)
+                bold: True
+                color: 1, 1, 1, 1
+
+        # Botões do menu
+        BoxLayout:
+            orientation: 'vertical'
+            padding: dp(5)
+            spacing: dp(5)
+
+            Button:
+                text: "Vitrine"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                on_release: root.navegar('vitrine')
+
+            Button:
+                text: "Novo Produto"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                disabled: not app.is_admin
+                opacity: 1 if app.is_admin else 0.5
+                on_release: root.navegar('cadastro')
+
+            Button:
+                text: "Novo Usuário"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                disabled: not app.is_admin
+                opacity: 1 if app.is_admin else 0.5
+                on_release: root.navegar('usuario')
+
+            Button:
+                text: "Relatório"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                on_release: root.navegar('relatorio')
+
+            Button:
+                text: "Logo"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                on_release: root.abrir_logo()
+
+            Widget:
+
+            Button:
+                text: "Sair"
+                size_hint_y: None
+                height: dp(48)
+                font_size: sp(16)
+                on_release: app.logout()
