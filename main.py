@@ -4,7 +4,6 @@ from kivy.lang import Builder
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.uix.image import Image
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.floatlayout import FloatLayout
 import os
 import shutil
 
@@ -13,10 +12,6 @@ from db import BancoDados
 from logo_manager import LogoManager
 
 class ClickableImage(ButtonBehavior, Image):
-    pass
-
-class RootLayout(FloatLayout):
-    """Root layout with screen manager container"""
     pass
 
 # Load root_layout.kv
@@ -74,17 +69,6 @@ class LoginScreen(Screen):
                 if hasattr(root, 'ids') and hasattr(root.ids, 'btn_hamburger'):
                     root.ids.btn_hamburger.opacity = 1
                     root.ids.btn_hamburger.disabled = False
-                    # Bind hamburger button to toggle menu
-                    def toggle_menu(*args):
-                        overlay = root.ids.menu_overlay
-                        if overlay.opacity == 0:
-                            overlay.opacity = 1
-                            overlay.disabled = False
-                        else:
-                            overlay.opacity = 0
-                            overlay.disabled = True
-                    root.ids.btn_hamburger.unbind(on_release=toggle_menu)
-                    root.ids.btn_hamburger.bind(on_release=toggle_menu)
             except Exception as e:
                 app.print_debug(f"Error showing hamburger: {e}")
             self.manager.current = 'vitrine'
@@ -679,8 +663,9 @@ class EstoqueApp(App, LogoManager):
         sm.add_widget(RelatorioScreen(name='relatorio'))
         sm.current = 'login'
 
-        # Create RootLayout and wire ScreenManager
-        root = RootLayout()
+        # Create RootLayout from KV and wire ScreenManager
+        from kivy.factory import Factory
+        root = Factory.RootLayout()
         root.screen_manager = sm
         root.ids.screen_manager_container.add_widget(sm)
 
@@ -694,6 +679,20 @@ class EstoqueApp(App, LogoManager):
                 self.print_debug(f"Navigated to: {tela}")
         except Exception as e:
             self.print_debug(f"Error navigating to {tela}: {e}")
+
+    def toggle_menu(self):
+        """Toggle the hamburger menu overlay"""
+        try:
+            if self.root and hasattr(self.root, 'ids') and hasattr(self.root.ids, 'menu_overlay'):
+                overlay = self.root.ids.menu_overlay
+                if overlay.opacity == 0:
+                    overlay.opacity = 1
+                    overlay.disabled = False
+                else:
+                    overlay.opacity = 0
+                    overlay.disabled = True
+        except Exception as e:
+            self.print_debug(f"Error toggling menu: {e}")
 
     def print_debug(self, msg):
         """Print debug messages"""

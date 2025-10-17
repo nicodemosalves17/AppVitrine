@@ -26,7 +26,7 @@
         font_size: sp(24)
         opacity: 0
         disabled: True
-        on_release: self.parent.ids.menu_overlay.opacity = 1 if self.parent.ids.menu_overlay.opacity == 0 else 0; setattr(self.parent.ids.menu_overlay, 'disabled', False if self.parent.ids.menu_overlay.opacity == 1 else True)
+        on_release: app.toggle_menu()
 
     # Menu overlay (initially hidden)
     FloatLayout:
