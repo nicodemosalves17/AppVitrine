@@ -1,0 +1,156 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                        AppVitrine Architecture                     ║
+║                     With Hamburger Menu System                     ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+┌───────────────────────────────────────────────────────────────────┐
+│  EstoqueApp (main.py)                                             │
+│  - is_admin: BooleanProperty                                      │
+│  - logo_path: StringProperty                                      │
+│  + build() → RootLayout                                           │
+│  + ir_para(tela)                                                  │
+│  + print_debug()                                                  │
+│  + logout()                                                       │
+│  + selecionar_logo()                                              │
+└───────────────────────────────────────────────────────────────────┘
+                              │
+                              │ creates
+                              ▼
+┌───────────────────────────────────────────────────────────────────┐
+│  RootLayout (root_layout.py + root_layout.kv)                     │
+│  - menu_aberto: BooleanProperty                                   │
+│  - screen_manager: ObjectProperty                                 │
+│  + toggle_menu(abrir)                                             │
+│  + fechar_menu()                                                  │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ [☰] btn_hamburger (top-left, initially hidden)              │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ screen_manager_container (holds ScreenManager)              │ │
+│  │                                                              │ │
+│  │   ┌──────────────────────────────────────────────┐          │ │
+│  │   │  ScreenManager                               │          │ │
+│  │   │                                              │          │ │
+│  │   │  - LoginScreen (name='login')                │          │ │
+│  │   │  - VitrineScreen (name='vitrine')            │          │ │
+│  │   │  - CadastroScreen (name='cadastro')          │          │ │
+│  │   │  - PopupScreen (name='popup')                │          │ │
+│  │   │  - UsuarioScreen (name='usuario')            │          │ │
+│  │   │  - RelatorioScreen (name='relatorio')        │          │ │
+│  │   │                                              │          │ │
+│  │   │  current: 'login' (initially)                │          │ │
+│  │   └──────────────────────────────────────────────┘          │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │ menu_overlay (visible when menu_aberto=True)                │ │
+│  │                                                              │ │
+│  │  ┌─────────────────────────────────────────────────────┐    │ │
+│  │  │ Backdrop (semi-transparent, closes menu on click)   │    │ │
+│  │  └─────────────────────────────────────────────────────┘    │ │
+│  │                                                              │ │
+│  │  ┌─────────────────────────────────────────────────────┐    │ │
+│  │  │ Menu Panel (250dp width, slides from left)          │    │ │
+│  │  │                                                      │    │ │
+│  │  │  Menu                                                │    │ │
+│  │  │  ─────────────────────────────                       │    │ │
+│  │  │  [ Vitrine ]                                         │    │ │
+│  │  │  [ Novo Produto ] (admin only)                       │    │ │
+│  │  │  [ Novo Usuário ] (admin only)                       │    │ │
+│  │  │  [ Relatório ]                                       │    │ │
+│  │  │  [ Trocar Logo ] (admin only)                        │    │ │
+│  │  │                                                      │    │ │
+│  │  │  ─────────────────────────────                       │    │ │
+│  │  │  [ Sair ]                                            │    │ │
+│  │  └─────────────────────────────────────────────────────┘    │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────────┘
+
+
+USER FLOW:
+══════════
+
+1. App Launch
+   ┌─────────┐
+   │  Start  │
+   └────┬────┘
+        │
+        ▼
+   ┌──────────────┐
+   │ Login Screen │  ← hamburger hidden
+   └──────┬───────┘
+          │ login()
+          ▼
+   ┌────────────────┐
+   │ Show Hamburger │  ← btn_hamburger.opacity = 1
+   └────────┬───────┘
+            │
+            ▼
+   ┌────────────────┐
+   │ Vitrine Screen │  ← sm.current = 'vitrine'
+   └────────────────┘
+
+2. Menu Interaction
+   ┌────────────────┐
+   │ Click [☰]      │
+   └────────┬───────┘
+            │ toggle_menu(True)
+            ▼
+   ┌────────────────┐
+   │  Menu Opens    │  ← menu_aberto = True
+   │  (slides in)   │
+   └────────┬───────┘
+            │
+            ├─► Click option → Navigate + close menu
+            ├─► Click backdrop → Close menu
+            └─► Click Sair → Logout
+
+3. Logout
+   ┌────────────────┐
+   │  Click Sair    │
+   └────────┬───────┘
+            │ logout()
+            ▼
+   ┌────────────────┐
+   │ Hide Hamburger │  ← btn_hamburger.opacity = 0
+   └────────┬───────┘
+            │
+            ▼
+   ┌────────────────┐
+   │  Close Menu    │  ← fechar_menu()
+   └────────┬───────┘
+            │
+            ▼
+   ┌────────────────┐
+   │ Login Screen   │  ← sm.current = 'login'
+   └────────────────┘
+
+
+REMOVED COMPONENTS:
+═══════════════════
+
+❌ menu.kv (legacy top menu bar)
+❌ base_template_with_menu.kv (legacy template)
+❌ MenuManager mixin
+❌ show_top_menu property
+❌ TopMenu widget
+❌ @BaseScreen template inheritance
+
+ADDED COMPONENTS:
+═════════════════
+
+✅ root_layout.py (RootLayout class)
+✅ root_layout.kv (hamburger menu UI)
+✅ ir_para(tela) method
+✅ print_debug() method
+
+SCREEN AUTONOMY:
+═══════════════
+
+All screens now define their own:
+- canvas.before with orange background
+- Complete layout structure
+- No dependency on base templates
+
