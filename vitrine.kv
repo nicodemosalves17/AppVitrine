@@ -1,13 +1,17 @@
 #:import dp kivy.metrics.dp
 
-<VitrineScreen@BaseScreen>:
-    titulo: "Produtos"
+<VitrineScreen@Screen>:
+    canvas.before:
+        Color:
+            rgba: 1, 0.647, 0, 1  # #ffa500
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
-    # O conteúdo vai para o content_area do template base!
     BoxLayout:
-        id: content_area
         orientation: 'vertical'
         spacing: dp(10)
+        padding: dp(10)
 
         # Botões legados (invisíveis, se ainda usados no Python)
         BoxLayout:
